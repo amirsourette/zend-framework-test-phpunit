@@ -1,7 +1,7 @@
 Zend Framework 2 Test with PHPUnit
 ==============
 
-Version 0.0.1 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
+Version 0.1.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
 
 Introduction
 ------------
@@ -37,6 +37,8 @@ class IndexControllerTest extends AbstractControllerTestCase
         $this->assertActionName('index');
         $this->assertControllerName('application-index');
         $this->assertRouteMatchName('home');
+        $this->assertQuery('div[class="container"]');
+        $this->assertQueryCount('div[class="container"]', 2);
         
         // custom assert
         $sm = $this->getApplicationServiceLocator();

@@ -11,8 +11,8 @@ use Zend\Dom;
 class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
 {
     protected $application;
-    protected static $applicationConfig;
     protected static $useConsoleRequest = false;
+    private static $applicationConfig;
 
     public function setUseConsoleRequest($boolean)
     {
@@ -58,24 +58,65 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
     public function assertResponseStatusCode($code)
     {
         $response = $this->application->getResponse();
-        $this->assertEquals($code, $response->getStatusCode());
+        $match = $response->getStatusCode();
+        if($code != $response->getStatusCode()) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting response code "%s"', $code));
+        }
+        $this->assertEquals($code, $match);
     }
     
     public function assertActionName($action)
     {
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
-        $this->assertEquals($action, $routeMatch->getParam('action'));
+        $match = $routeMatch->getParam('action');
+        if($action != $match) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting action name "%s"', $action));
+        }
+        $this->assertEquals($action, $match);
     }
     
     public function assertControllerName($controller)
     {
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
-        $this->assertEquals($controller, $routeMatch->getParam('controller'));
+        $match = $routeMatch->getParam('controller');
+        if($controller != $match) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting controller name "%s"', $controller));
+        }
+        $this->assertEquals($controller, $match);
     }
     
     public function assertRouteMatchName($route)
     {
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
-        $this->assertEquals($route, $routeMatch->getMatchedRouteName());
+        $match = $routeMatch->getMatchedRouteName();
+        if($route != $match) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting route matched name "%s"', $route));
+        }
+        $this->assertEquals($route, $match);
     }
+    
+    public function assertQuery($path)
+    {
+        $response = $this->application->getResponse();
+        $dom = new Dom\Query($response->getContent());
+        $result = $dom->execute($path);
+        $match = count($result);
+        if(!$match > 0) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s EXISTS', $path));
+        }
+        $this->assertEquals(true, $match > 0);
+    }
+    
+    public function assertQueryCount($path, $count)
+    {
+        $response = $this->application->getResponse();
+        $dom = new Dom\Query($response->getContent());
+        $result = $dom->execute($path);
+        $match = count($result);
+        if($match != $count) {
+            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times', $path, $count));
+        }
+        $this->assertEquals($match, $count);
+    }
+    
 }
