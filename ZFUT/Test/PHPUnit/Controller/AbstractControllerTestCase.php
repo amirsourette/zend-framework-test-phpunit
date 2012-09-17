@@ -3,6 +3,7 @@
 namespace ZFUT\Test\PHPUnit\Controller;
 
 use PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_ExpectationFailedException;
 use ZFUT\Test\PHPUnit\Mvc\View\CaptureResponseListener;
 use Zend\Mvc\Application;
 use Zend\ModuleManager\ModuleEvent;
@@ -60,7 +61,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $response = $this->application->getResponse();
         $match = $response->getStatusCode();
         if($code != $response->getStatusCode()) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting response code "%s"', $code));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting response code "%s"', $code));
         }
         $this->assertEquals($code, $match);
     }
@@ -70,7 +71,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getParam('action');
         if($action != $match) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting action name "%s"', $action));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting action name "%s"', $action));
         }
         $this->assertEquals($action, $match);
     }
@@ -80,7 +81,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getParam('controller');
         if($controller != $match) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting controller name "%s"', $controller));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting controller name "%s"', $controller));
         }
         $this->assertEquals($controller, $match);
     }
@@ -90,7 +91,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getMatchedRouteName();
         if($route != $match) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting route matched name "%s"', $route));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting route matched name "%s"', $route));
         }
         $this->assertEquals($route, $match);
     }
@@ -102,7 +103,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $result = $dom->execute($path);
         $match = count($result);
         if(!$match > 0) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s EXISTS', $path));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s EXISTS', $path));
         }
         $this->assertEquals(true, $match > 0);
     }
@@ -114,9 +115,8 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $result = $dom->execute($path);
         $match = count($result);
         if($match != $count) {
-            throw new \PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times', $path, $count));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times', $path, $count));
         }
         $this->assertEquals($match, $count);
     }
-    
 }
