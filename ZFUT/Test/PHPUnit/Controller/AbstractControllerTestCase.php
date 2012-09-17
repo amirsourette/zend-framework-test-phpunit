@@ -96,24 +96,35 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $this->assertEquals($route, $match);
     }
     
-    public function assertQuery($path)
+    protected function query($path)
     {
         $response = $this->application->getResponse();
         $dom = new Dom\Query($response->getContent());
         $result = $dom->execute($path);
-        $match = count($result);
+        return count($result);
+    }
+    
+    public function assertQuery($path)
+    {
+        $match = $this->query($path);
         if(!$match > 0) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s EXISTS', $path));
         }
         $this->assertEquals(true, $match > 0);
     }
     
+    public function assertNotQuery($path)
+    {
+        $match = $this->query($path);
+        if($match != 0) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s DOES NOT EXIST', $path));
+        }
+        $this->assertEquals(0, $match);
+    }
+    
     public function assertQueryCount($path, $count)
     {
-        $response = $this->application->getResponse();
-        $dom = new Dom\Query($response->getContent());
-        $result = $dom->execute($path);
-        $match = count($result);
+        $match = $this->query($path);
         if($match != $count) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times', $path, $count));
         }
