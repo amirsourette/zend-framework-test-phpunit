@@ -11,94 +11,128 @@ use Zend\Dom;
 
 class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
 {
-    protected $application;
-    protected static $useConsoleRequest = false;
-    private static $applicationConfig;
+    private $application;
+    private $applicationConfig;
+
+    protected $useConsoleRequest = false;
 
     public function setUseConsoleRequest($boolean)
     {
-        self::$useConsoleRequest = (boolean)$boolean;
+        $this->useConsoleRequest = (boolean)$boolean;
     }
 
-    public static function setApplicationConfig($applicationConfig)
+    public function setApplicationConfig($applicationConfig)
     {
-        if(!self::$useConsoleRequest) {
-            $consoleServiceConfig = array(
-                'service_manager' => array(
-                    'factories' => array(
-                        'ServiceListener' => 'ZFUT\Test\PHPUnit\Mvc\Service\ServiceListenerFactory',
+        $this->applicationConfig = $applicationConfig;
+    }
+
+    public function getApplication()
+    {
+        if(null === $this->application) {
+            $appConfig = $this->applicationConfig;
+            if(!$this->useConsoleRequest) {
+                $consoleServiceConfig = array(
+                    'service_manager' => array(
+                        'factories' => array(
+                            'ServiceListener' => 'ZFUT\Test\PHPUnit\Mvc\Service\ServiceListenerFactory',
+                        ),
                     ),
-                ),
-            );
-            $applicationConfig = array_replace_recursive($applicationConfig, $consoleServiceConfig);
+                );
+                $appConfig = array_replace_recursive($appConfig, $consoleServiceConfig);
+            }
+            $this->application = Application::init($appConfig);
+            $events = $this->application->getEventManager();
+            $events->attach(new CaptureResponseListener);
         }
-        self::$applicationConfig = $applicationConfig;
-    }
-
-    public function setUp()
-    {
-        $this->application = Application::init(self::$applicationConfig);
-        $events = $this->application->getEventManager();
-        $events->attach(new CaptureResponseListener);
-        parent::setUp();
+        return $this->application;
     }
 
     public function dispatch($url)
     {
-        $request = $this->application->getRequest();
-        $request->setUri('http://localhost' . $url);
-        $request->setBaseUrl('');
-        $this->application->run();
+        $request = $this->getApplication()->getRequest();
+        if($this->useConsoleRequest) {
+            $params = preg_split('#\s+#', $url);
+            $request->params()->exchangeArray($params);
+        } else {
+            $request->setUri('http://localhost' . $url);
+            $request->setBaseUrl('');
+        }
+        $this->getApplication()->run();
     }
     
     public function getApplicationServiceLocator()
     {
-        return $this->application->getServiceManager();
+        return $this->getApplication()->getServiceManager();
     }
 
     public function assertResponseStatusCode($code)
     {
-        $response = $this->application->getResponse();
-        $match = $response->getStatusCode();
-        if($code != $response->getStatusCode()) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting response code "%s"', $code));
+        $message = '';
+        $response = $this->getApplication()->getResponse();
+        if($this->useConsoleRequest) {
+            if(!in_array($code, array(0, 1))) {
+                throw new PHPUnit_Framework_ExpectationFailedException(
+                    'Console status code assert value must be O (valid) or 1 (error)'
+                );
+            }
+            $match = $response->getErrorLevel();
+            if(null === $match) {
+                $match = 0;
+            }
+            if($match != 0) {
+                $message = $response->getContent();
+            }
+        } else {
+            $match = $response->getStatusCode();
+        }
+        if($code != $match) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting response code "%s"' . ($message ? '. Assertion error : %s' : '%s'),
+                $code, $message
+            ));
         }
         $this->assertEquals($code, $match);
     }
     
     public function assertActionName($action)
     {
-        $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
+        $routeMatch = $this->getApplication()->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getParam('action');
         if($action != $match) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting action name "%s"', $action));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting action name "%s"', $action
+            ));
         }
         $this->assertEquals($action, $match);
     }
     
     public function assertControllerName($controller)
     {
-        $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
+        $routeMatch = $this->getApplication()->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getParam('controller');
         if($controller != $match) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting controller name "%s"', $controller));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting controller name "%s"', $controller
+            ));
         }
         $this->assertEquals($controller, $match);
     }
     
     public function assertRouteMatchName($route)
     {
-        $routeMatch = $this->application->getMvcEvent()->getRouteMatch();
+        $routeMatch = $this->getApplication()->getMvcEvent()->getRouteMatch();
         $match = $routeMatch->getMatchedRouteName();
         if($route != $match) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting route matched name "%s"', $route));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting route matched name "%s"', $route
+            ));
         }
         $this->assertEquals($route, $match);
     }
     
     protected function query($path)
     {
-        $response = $this->application->getResponse();
+        $response = $this->getApplication()->getResponse();
         $dom = new Dom\Query($response->getContent());
         $result = $dom->execute($path);
         return count($result);
@@ -108,7 +142,9 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
     {
         $match = $this->query($path);
         if(!$match > 0) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s EXISTS', $path));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s EXISTS', $path
+            ));
         }
         $this->assertEquals(true, $match > 0);
     }
@@ -117,7 +153,9 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
     {
         $match = $this->query($path);
         if($match != 0) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s DOES NOT EXIST', $path));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s DOES NOT EXIST', $path
+            ));
         }
         $this->assertEquals(0, $match);
     }
@@ -126,7 +164,10 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
     {
         $match = $this->query($path);
         if($match != $count) {
-            throw new PHPUnit_Framework_ExpectationFailedException(sprintf('Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times', $path, $count));
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times',
+                $path, $count
+            ));
         }
         $this->assertEquals($match, $count);
     }

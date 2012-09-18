@@ -1,27 +1,21 @@
 Zend Framework 2 Test with PHPUnit
 ==============
 
-Version 0.1.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
+Version 0.2.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
 
 Introduction
 ------------
 
 ZFUT provide a library to use PHPUnit with your controllers and modules.
 
-Use case :
+Use case with http request :
 
 ```php
-<?php
-
-namespace ModuleTest\Application\Controller;
-
-use ZFUT\Test\PHPUnit\Controller\AbstractControllerTestCase;
-
-class IndexControllerTest extends AbstractControllerTestCase
+class IndexControllerTest extends AbstractHttpControllerTestCase
 {    
     public function setUp()
     {
-        AbstractControllerTestCase::setApplicationConfig(
+        $this->setApplicationConfig(
             include __DIR__ . '/../../../config/application.config.php'
         );
         parent::setUp();
@@ -40,6 +34,36 @@ class IndexControllerTest extends AbstractControllerTestCase
         $this->assertQuery('div[class="container"]');
         $this->assertNotQuery('#form');
         $this->assertQueryCount('div[class="container"]', 2);
+        
+        // custom assert
+        $sm = $this->getApplicationServiceLocator();
+        // ... here my asserts ...
+    }
+}
+```
+
+Use case with console request :
+
+```php
+class CrawlControllerTest extends AbstractConsoleControllerTestCase
+{    
+    public function setUp()
+    {
+        $this->setApplicationConfig(
+            include __DIR__ . '/../../../config/application.config.php'
+        );
+        parent::setUp();
+    }
+    
+    public function testCrawlTweet()
+    {
+        // dispatch url
+        $this->dispatch('--crawl-tweet');
+        
+        // basic assertions
+        $this->assertResponseStatusCode(0);
+        $this->assertActionName('tweet');
+        $this->assertControllerName('cron-crawl');
         
         // custom assert
         $sm = $this->getApplicationServiceLocator();
