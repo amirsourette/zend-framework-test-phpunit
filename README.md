@@ -1,7 +1,9 @@
-Zend Framework 2 Test with PHPUnit
+Zend Framework 2 Controller Test with PHPUnit
 ==============
 
 Version 1.0.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
+
+This lib is a now a PR : https://github.com/zendframework/zf2/pull/2794. Give me your feedback !
 
 Introduction
 ------------
