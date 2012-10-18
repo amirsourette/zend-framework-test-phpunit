@@ -1,6 +1,6 @@
 <?php
 
-namespace ZFUT\Test\PHPUnit\Mvc\Service;
+namespace Zend\Test\PHPUnit\Mvc\Service;
 
 use Zend\Mvc\Service\ServiceListenerFactory as BaseServiceListenerFactory;
 
@@ -23,7 +23,7 @@ class ServiceListenerFactory extends BaseServiceListenerFactory
             'ConsoleRouter'           => 'Zend\Mvc\Service\RouterFactory',
             'DependencyInjector'      => 'Zend\Mvc\Service\DiFactory',
             'HttpRouter'              => 'Zend\Mvc\Service\RouterFactory',
-            'Router'                  => 'ZFUT\Test\PHPUnit\Mvc\Service\RouterFactory', // override
+            'Router'                  => 'Zend\Test\PHPUnit\Mvc\Service\RouterFactory', // override
             'ViewHelperManager'       => 'Zend\Mvc\Service\ViewHelperManagerFactory',
             'ViewFeedRenderer'        => 'Zend\Mvc\Service\ViewFeedRendererFactory',
             'ViewFeedStrategy'        => 'Zend\Mvc\Service\ViewFeedStrategyFactory',

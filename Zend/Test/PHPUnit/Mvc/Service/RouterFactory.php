@@ -1,6 +1,6 @@
 <?php
 
-namespace ZFUT\Test\PHPUnit\Mvc\Service;
+namespace Zend\Test\PHPUnit\Mvc\Service;
 
 use Zend\Mvc\Router\Http\TreeRouteStack as HttpRouter;
 use Zend\ServiceManager\FactoryInterface;

@@ -11,6 +11,8 @@ ZFUT provide a library to use PHPUnit with your controllers and modules.
 Use case with http request :
 
 ```php
+use Zend\Test\PHPUnit\Controller\AbstractHttpControllerTestCase;
+
 class IndexControllerTest extends AbstractHttpControllerTestCase
 {    
     public function setUp()
@@ -30,7 +32,7 @@ class IndexControllerTest extends AbstractHttpControllerTestCase
         $this->assertResponseStatusCode(200);
         $this->assertActionName('index');
         $this->assertControllerName('application-index');
-        $this->assertRouteMatchName('home');
+        $this->assertMatchedRouteName('home');
         $this->assertQuery('div[class="container"]');
         $this->assertNotQuery('#form');
         $this->assertQueryCount('div[class="container"]', 2);
@@ -45,6 +47,8 @@ class IndexControllerTest extends AbstractHttpControllerTestCase
 Use case with console request :
 
 ```php
+use Zend\Test\PHPUnit\Controller\AbstractConsoleControllerTestCase;
+
 class CrawlControllerTest extends AbstractConsoleControllerTestCase
 {    
     public function setUp()

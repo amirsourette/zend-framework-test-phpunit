@@ -1,6 +1,6 @@
 <?php
 
-namespace ZFUT\Test\PHPUnit\Mvc\View;
+namespace Zend\Test\PHPUnit\Mvc\View;
 
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
@@ -47,7 +47,7 @@ class CaptureResponseListener implements ListenerAggregateInterface
      * @return mixed
      */
     public function captureResponse(MvcEvent $e)
-    {   
+    {
         $e->stopPropagation(true);
     }
 }

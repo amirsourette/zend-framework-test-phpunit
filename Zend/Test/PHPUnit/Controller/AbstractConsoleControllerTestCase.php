@@ -1,6 +1,6 @@
 <?php
 
-namespace ZFUT\Test\PHPUnit\Controller;
+namespace Zend\Test\PHPUnit\Controller;
 
 class AbstractConsoleControllerTestCase extends AbstractControllerTestCase
 {
