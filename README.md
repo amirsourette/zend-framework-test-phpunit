@@ -1,7 +1,7 @@
 Zend Framework 2 Test with PHPUnit
 ==============
 
-Version 0.2.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
+Version 1.0.0 Created by [Vincent Blanchon](http://developpeur-zend-framework.fr/)
 
 Introduction
 ------------
