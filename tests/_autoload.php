@@ -9,3 +9,10 @@ Zend\Loader\AutoloaderFactory::factory(array(
         ),
     ),
 ));
+
+$standard = new Zend\Loader\StandardAutoloader(array(
+    'namespaces' => array(
+        'Zend' => __DIR__ . '/../Zend',
+    ),
+));
+$standard->register();

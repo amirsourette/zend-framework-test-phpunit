@@ -30,7 +30,7 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
     public function setUp()
     {
         $this->setApplicationConfig(
-            include __DIR__ . '/_files/application.config.php'
+            include __DIR__ . '/../../_files/application.config.php'
         );
         parent::setUp();
     }
@@ -85,9 +85,9 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         $this->dispatch('/tests');
 
         // tests with case insensitive
-        $this->assertModule('mock');
-        $this->assertModule('Mock');
-        $this->assertModule('MoCk');
+        $this->assertModule('baz');
+        $this->assertModule('Baz');
+        $this->assertModule('BAz');
 
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
         $this->assertModule('Application');
@@ -99,7 +99,7 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         $this->assertNotModule('Application');
 
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
-        $this->assertNotModule('mock');
+        $this->assertNotModule('baz');
     }
 
     public function testAssertControllerClass()
@@ -129,21 +129,21 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         $this->dispatch('/tests');
 
         // tests with case insensitive
-        $this->assertControllerName('mock_index');
-        $this->assertControllerName('Mock_index');
-        $this->assertControllerName('MoCk_index');
+        $this->assertControllerName('baz_index');
+        $this->assertControllerName('Baz_index');
+        $this->assertControllerName('BAz_index');
 
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
-        $this->assertControllerName('mock');
+        $this->assertControllerName('baz');
     }
 
     public function testAssertNotControllerName()
     {
         $this->dispatch('/tests');
-        $this->assertNotControllerName('mock');
+        $this->assertNotControllerName('baz');
 
         $this->setExpectedException('PHPUnit_Framework_ExpectationFailedException');
-        $this->assertNotControllerName('mock_index');
+        $this->assertNotControllerName('baz_index');
     }
 
     public function testAssertActionName()
@@ -259,6 +259,13 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         $this->assertQueryCount('div.post', 0);
     }
 
+    public function testAssertQueryWithDynamicQueryParamsInDispatch()
+    {
+        $this->dispatch('/tests?foo=bar&num_get=5');
+        $this->assertQueryCount('div.get', 5);
+        $this->assertQueryCount('div.post', 0);
+    }
+
     public function testAssertQueryWithDynamicPostParams()
     {
         $this->getRequest()
@@ -292,7 +299,7 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         // get and assert view controller
         $viewModel = $mvcEvent->getResult();
         $this->assertEquals(true, $viewModel instanceof ViewModel);
-        $this->assertEquals($viewModel->getTemplate(), 'mock/index/unittests');
+        $this->assertEquals($viewModel->getTemplate(), 'baz/index/unittests');
 
         // get and assert view manager layout
         $layout = $mvcEvent->getViewModel();
@@ -315,12 +322,12 @@ class AbstractHttpControllerTestCaseTest extends AbstractHttpControllerTestCase
         $this->assertEquals(false, $result->stopped());
         $this->assertEquals(false, $this->getApplication()->getMvcEvent()->getError());
         $this->assertEquals(true, $routeMatch instanceof RouteMatch);
-        $this->assertEquals($routeMatch->getParam('controller'), 'mock_index');
+        $this->assertEquals($routeMatch->getParam('controller'), 'baz_index');
 
         $result = $this->triggerApplicationEvent(MvcEvent::EVENT_DISPATCH);
         $viewModel = $this->getApplication()->getMvcEvent()->getResult();
         $this->assertEquals(true, $viewModel instanceof ViewModel);
-        $this->assertEquals($viewModel->getTemplate(), 'mock/index/unittests');
+        $this->assertEquals($viewModel->getTemplate(), 'baz/index/unittests');
     }
 
     /**

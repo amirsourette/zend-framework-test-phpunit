@@ -16,8 +16,9 @@ use Zend\Dom;
 use Zend\Mvc\Application;
 use Zend\ModuleManager\ModuleEvent;
 use Zend\Mvc\MvcEvent;
-use Zend\Test\PHPUnit\Mvc\View\CaptureResponseListener;
+use Zend\Mvc\View\SendResponseListener;
 use Zend\Uri\Http as HttpUri;
+use Zend\Stdlib\Parameters;
 
 /**
  * @category   Zend
@@ -79,8 +80,14 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
                 $appConfig = array_replace_recursive($appConfig, $consoleServiceConfig);
             }
             $this->application = Application::init($appConfig);
+
             $events = $this->application->getEventManager();
-            $events->attach(new CaptureResponseListener);
+            foreach($events->getListeners(MvcEvent::EVENT_FINISH) as $listener) {
+                $callback = $listener->getCallback();
+                if(is_array($callback) && $callback[0] instanceof SendResponseListener) {
+                    $events->detach($listener);
+                }
+            }
         }
         return $this->application;
     }
@@ -125,6 +132,11 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
             $request->params()->exchangeArray($params);
         } else {
             $uri = new HttpUri($url);
+            $query = $uri->getQuery();
+            if($query) {
+                parse_str($query, $args);
+                $request->setQuery(new Parameters($args));
+            }
             $request->setUri($uri);
         }
     }

@@ -8,7 +8,7 @@ This lib is a now a PR : https://github.com/zendframework/zf2/pull/2794. Give me
 Introduction
 ------------
 
-ZFUT provide a library to use PHPUnit with your controllers and modules.
+This repository provide a library to use PHPUnit with your controllers and modules.
 
 Use case with http request :
 
@@ -41,7 +41,7 @@ class IndexControllerTest extends AbstractHttpControllerTestCase
         
         // custom assert
         $sm = $this->getApplicationServiceLocator();
-        // ... here my asserts ...
+        // ... here my asserts with phpunit ...
     }
 }
 ```
@@ -73,7 +73,7 @@ class CrawlControllerTest extends AbstractConsoleControllerTestCase
         
         // custom assert
         $sm = $this->getApplicationServiceLocator();
-        // ... here my asserts ...
+        // ... here my asserts with phpunit ...
     }
 }
 ```
