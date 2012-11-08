@@ -156,6 +156,26 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Reset the request
+     * @return AbstractControllerTestCase
+     */
+    public function reset()
+    {
+        // initiate the request object to authorize multi dispatch
+        $request = $this->getRequest();
+        if($this->useConsoleRequest) {
+            $request->params()->exchangeArray(array());
+        } else {
+            $request->setQuery(new Parameters(array()));
+            $request->setPost(new Parameters(array()));
+            $request->setFiles(new Parameters(array()));
+            $request->setCookies(new Parameters(array()));
+            $request->setServer(new Parameters($_SERVER));
+        }
+        return $this;
+    }
+
+    /**
      * Trigger an application event
      *
      * @param string $eventName
@@ -506,12 +526,27 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
         $this->assertNotEquals($route, $match);
     }
 
+    /**
+     * Execute a dom query
+     * @param string $path
+     * @return array
+     */
     protected function query($path)
     {
         $response = $this->getResponse();
         $dom = new Dom\Query($response->getContent());
         $result = $dom->execute($path);
-        return count($result);
+        return $result;
+    }
+
+    /**
+     * Count the dom query executed
+     * @param string $path
+     * @return integer
+     */
+    protected function queryCount($path)
+    {
+        return count($this->query($path));
     }
 
     /**
@@ -522,7 +557,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertQuery($path)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if(!$match > 0) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s EXISTS', $path
@@ -539,7 +574,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertNotQuery($path)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if($match != 0) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s DOES NOT EXIST', $path
@@ -557,7 +592,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertQueryCount($path, $count)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if($match != $count) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s OCCURS EXACTLY %d times',
@@ -576,7 +611,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertNotQueryCount($path, $count)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if($match == $count) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s DOES NOT OCCUR EXACTLY %d times',
@@ -595,7 +630,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertQueryCountMin($path, $count)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if($match < $count) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s OCCURS AT LEAST %d times',
@@ -614,7 +649,7 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
      */
     public function assertQueryCountMax($path, $count)
     {
-        $match = $this->query($path);
+        $match = $this->queryCount($path);
         if($match > $count) {
             throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
                 'Failed asserting node DENOTED BY %s OCCURS AT MOST %d times',
@@ -622,5 +657,53 @@ class AbstractControllerTestCase extends PHPUnit_Framework_TestCase
             ));
         }
         $this->assertEquals(true, $match <= $count);
+    }
+
+    /**
+     * Assert against DOM selection; node should contain content
+     *
+     * @param  string $path CSS selector path
+     * @param  string $match content that should be contained in matched nodes
+     * @return void
+     */
+    public function assertQueryContentContains($path, $match)
+    {
+        $result = $this->query($path);
+        if($result->count() == 0) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s EXISTS', $path
+            ));
+        }
+        if($result->current()->nodeValue != $match) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node denoted by %s CONTAINS content "%s"',
+                $result->current()->nodeValue, $match
+            ));
+        }
+        $this->assertEquals($result->current()->nodeValue, $match);
+    }
+
+    /**
+     * Assert against DOM selection; node should NOT contain content
+     *
+     * @param  string $path CSS selector path
+     * @param  string $match content that should NOT be contained in matched nodes
+     * @return void
+     */
+    public function assertNotQueryContentContains($path, $match)
+    {
+        $result = $this->query($path);
+        if($result->count() == 0) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s EXISTS', $path
+            ));
+        }
+        if($result->current()->nodeValue == $match) {
+            throw new PHPUnit_Framework_ExpectationFailedException(sprintf(
+                'Failed asserting node DENOTED BY %s DOES NOT CONTAIN content "%s"',
+                $result->current()->nodeValue, $match
+            ));
+        }
+        $this->assertNotEquals($result->current()->nodeValue, $match);
     }
 }
